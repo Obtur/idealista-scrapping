@@ -5,10 +5,16 @@ Little project to scrape data from idealista API and improve it with a scrape fo
 
 ### Installation
 
+```
 npm install
-node app.js
+```
 
 ### Download data
+
+Start local server to receive jsons
+```
+node app.js
+```
 
 Then go to http://www.idealista.com/labs/propertyMap.htm
 
@@ -23,14 +29,32 @@ document.getElementsByTagName('body')[0].appendChild(s);
 
 copy chrome_snippet_to_download_list.js to console, and wait for all data to be saved in local idealista mondodb database
 
+In the console log, it will inform about the page it's saving 
+
 If you want to change the search area, play with radio and center parameters (do a similar search in the idealista map, and copy the parameters)
 
-There will be a lot of housings with "null" id, so to remove duplicates we apply the following uniqueIndex :
+There will be a lot of housings with "null" id, try this query :
 ```
-db.housings.aggregate({ $group : {_id : {url: "$url", userCode: "$userCode", price: "$price", latitude: "$latitude", longitude: "$longitude"}, total : { $sum : 1 } } }, { $match : { total : { $gte : 2 } } }, { $sort : {total : -1} },  { $limit : 5 } );
+db.housings.aggregate({ $group : {_id : "$url", total : { $sum : 1 } } }, { $match : { total : { $gte : 2 } } }, { $sort : {total : -1} },  { $limit : 5 } );
+{
+	"result" : [
+		{
+			"_id" : "www.idealista.com/null",
+			"total" : 10037
+		}
+	],
+	"ok" : 1
+}
+```
+Instead of url as id, we look for something more unique, try with aggregation until we find something reasonable
+```
+db.housings.aggregate({ $group : {_id : {url: "$url", userCode: "$userCode", price: "$price", latitude: "$latitude", longitude: "$longitude"}, total : { $sum : 1 } } }, { $match : { total : { $gte : 2 } } }, { $sort : {total : -1} },  { $limit : 15 } );
 ```
 
+To remove duplicates we apply the following uniqueIndex :
+```
 db.housings.ensureIndex( { url: 1 , userCode: 1, price: 1, latitude: 1, longitude: 1}, { unique: true, dropDups: true } )
+```
 
 With this we get 40k total housings, and 10k with null value (we could not add extra info)
 ```
