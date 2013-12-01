@@ -1,0 +1,10 @@
+{
+  "name" : "NestorExample",
+  "version" : "0.0.1",
+  "dependencies" : {
+    "express" : "3.x",
+    "connect-mongo" : "0.3.x",
+  "mongoose": "*",
+	"mongodb": "*"
+  }
+}

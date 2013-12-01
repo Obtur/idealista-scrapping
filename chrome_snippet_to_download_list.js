@@ -1,26 +1,9 @@
-var http = require('http');
-var request = require('request');
-var mongo = require('mongodb');
-var fs = require('fs');
-http.globalAgent.maxSockets = 20;
-
-var server = new mongo.Server('localhost', 27017, {auto_reconnect: true});
-var db = new mongo.Db('idealista', server);
-
 var idealistaAPI = "http://www.idealista.com/labs/propertyMap.htm";
 var results = [];
  
-db.open(function(err, db) {
-  if(!err) {
-    console.log("We are connected");
-
-    var housings = db.collection('housings');
-    search();
-  }
-});
-
 function search(numPage) {
-    queryString = {
+    numPage = numPage || 1;
+    jQuery.getJSON(idealistaAPI, {
             action: "json",
             operation: "V",
             radio: "40.4987200542489,-3.673553466796889",
@@ -33,22 +16,9 @@ function search(numPage) {
             studio:true,
             duplex:true,
             chalet:true,           
-            numPage: numPage,
-            k : '1656605ceb135330fa6dc53f1df56354'
-    };
-    numPage = numPage || 1;
-    request({ uri: idealistaAPI , qs: queryString, headers: { "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410."}, maxRedirects:1}, 
-    function(err, resp, body) {
-        if (err) {
-           console.log(err);
-        } else if ( resp.statusCode == 200) {
-            console.log(body);
-            fs.writeFile(fileName,body);
-        } else {
-            console.log("HTTP STATUS : " + resp.statusCode);
-            console.log(body);
-        }
-    });
+            numPage: numPage
+    })
+        .done(processResult);
 }
  
 function processResult(data) {

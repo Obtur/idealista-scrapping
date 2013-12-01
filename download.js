@@ -18,9 +18,18 @@ db.open(function(err, db) {
 		//for(i=300;i<400;i++) {
 		for(i in results) {
 			var id = results[i].url.replace(/.*inmueble./,'');
-			id = id.substr(0,id.length-1);
-			//console.log("saving:"+id);
-	    	saveHousing(id);
+			// last version doesn't have inmueble in url, and last slash
+			id = id.replace(/.*com./,'');
+			if(id.slice(-1) == "/") {
+				id = id.substr(0,id.length-1);
+			}
+			if(id != null && id != "null" && !isNaN(id)) {
+				console.log("saving:"+id);
+				saveHousing(id);
+	    	} else {
+	    		console.log("skipping empty id: " + id + " , objectId:" + results[i]._id);
+	    		filesToSave-=1;
+	    	}
 	    }
     	exitWhenFinished();	
 	});
@@ -45,7 +54,7 @@ function saveHousing(id) {
 			    	fs.writeFile(fileName,body);
 	    	    	filesToSave-=1;
 	    		} else {
-	    			console.log("["+filesToSave+"] not found:"+id);
+	    			console.log("["+filesToSave+"] error getting file. STATUS:"+resp.statusCode+" id:"+id);
 	    			filesToSave-=1;
 	    		}
 			});

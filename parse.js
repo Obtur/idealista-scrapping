@@ -17,9 +17,18 @@ db.open(function(err, db) {
         //for(i=1;i<10;i++) {
         for(i in results) {
             var id = results[i].url.replace(/.*inmueble./,'');
-            id = id.substr(0,id.length-1);
-            //console.log("saving:"+id);
-            parseHousing(id,results[i]);
+            // last version doesn't have inmueble in url, and last slash
+            id = id.replace(/.*com./,'');
+            if(id.slice(-1) == "/") {
+                id = id.substr(0,id.length-1);
+            }
+            if(id != null && id != "null" && !isNaN(id)) {
+                //console.log("saving:"+id);
+                parseHousing(id,results[i]);
+            } else {
+                console.log("skipping empty id: " + id + " , objectId:" + results[i]._id);
+                filesToSave-=1;
+            }
         }
         exitWhenFinished(); 
     });
