@@ -13,6 +13,3 @@ results
 
 npm-debug.log
 node_modules
-
-# Don't upload data
-housings
