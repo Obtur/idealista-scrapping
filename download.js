@@ -12,8 +12,9 @@ db.open(function(err, db) {
   if(!err) {
     console.log("We are connected");
 
-	var housings = db.collection('housings');
-	housings.find({munipality:"madrid",rooms:"1"}).toArray(function(err, results){
+	var housings = db.collection('housings_alquiler');
+//	housings.find({munipality:"madrid",rooms:"1"}).toArray(function(err, results){
+	housings.find({munipality:"madrid"}).toArray(function(err, results){
 	    filesToSave = results.length;
 		//for(i=300;i<400;i++) {
 		for(i in results) {
@@ -38,7 +39,7 @@ db.open(function(err, db) {
 });
 
 function saveHousing(id) {
-	var fileName = 'housings/'+id;
+	var fileName = 'housings_alquiler/'+id;
 
 	fs.exists(fileName, function (exists) {
   		if(!exists) {
@@ -52,6 +53,10 @@ function saveHousing(id) {
 			    } else if ( resp.statusCode == 200) {
 			    	console.log("["+filesToSave+"] saved:"+id);
 			    	fs.writeFile(fileName,body);
+	    	    	filesToSave-=1;
+			    } else if ( resp.statusCode == 404) {
+			    	console.log("["+filesToSave+"] saved NOT FOUND:"+id);
+			    	fs.writeFile(fileName,'');
 	    	    	filesToSave-=1;
 	    		} else {
 	    			console.log("["+filesToSave+"] error getting file. STATUS:"+resp.statusCode+" id:"+id);

@@ -5,7 +5,7 @@ function search(numPage) {
     numPage = numPage || 1;
     jQuery.getJSON(idealistaAPI, {
             action: "json",
-            operation: "V",
+            operation: "A", // "V" Compra, "A" Alquiler
             radio: "40.4987200542489,-3.673553466796889",
             center: "40.38643994085133, -3.673553466796889",
             minPrice:0,
@@ -29,7 +29,7 @@ function processResult(data) {
         sendToServer(item);
     });
     if (data[1].actualPage == 1) {
-        for(var n=data[1].actualPage; n < data[1].totalPages; n++) {
+        for(var n=2; n < data[1].totalPages; n++) {
             search(n);
         }
     } else if (data[1].actualPage == data[1].totalPages) {

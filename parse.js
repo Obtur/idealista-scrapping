@@ -7,12 +7,15 @@ var fs = require('fs');
 var server = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 var db = new mongo.Db('idealista', server);
 var filesToSave = 0;
+
+var replaceAll = false;
 db.open(function(err, db) {
   if(!err) {
     console.log("We are connected");
 
-    var housings = db.collection('housings');
-    housings.find({munipality:"madrid",rooms:"1"}).toArray(function(err, results){
+    var housings = db.collection('housings_alquiler');
+//    housings.find({munipality:"madrid",rooms:"1"}).toArray(function(err, results){
+    housings.find({munipality:"madrid"}).toArray(function(err, results){
         filesToSave = results.length;
         //for(i=1;i<10;i++) {
         for(i in results) {
@@ -24,7 +27,13 @@ db.open(function(err, db) {
             }
             if(id != null && id != "null" && !isNaN(id)) {
                 //console.log("saving:"+id);
-                parseHousing(id,results[i]);
+                //fs.exists('housings/'+id+".json", function (exists) {
+                //    if(!exists || (exists && replaceAll)) {
+                        parseHousing(id,results[i]);
+                //    } else {
+                //        console.log("already parsed id:" + id)
+                //    }
+                //});
             } else {
                 console.log("skipping empty id: " + id + " , objectId:" + results[i]._id);
                 filesToSave-=1;
@@ -37,7 +46,7 @@ db.open(function(err, db) {
 });
 
 function parseHousing(id, housing) {
-    var data = fs.readFile(__dirname + '/housings/'+id, { encoding : 'utf8'}, function (err, data) {
+    var data = fs.readFile(__dirname + '/housings_alquiler/'+id, { encoding : 'utf8'}, function (err, data) {
         if (err) {
             console.log("["+filesToSave+"] not found:"+id);
             filesToSave-=1;
@@ -67,7 +76,7 @@ function parseHousing(id, housing) {
             // las cadenas de texto, por ej el estado que siempre viene en la 2da pos
             housing.estado = housing.caracteristicas[1];
             // eficiencia energética
-            if(housing.caracteristicas[2].indexOf('cert-energ') > 0) {
+            if(housing.caracteristicas[2] && housing.caracteristicas[2].indexOf('cert-energ') > 0) {
                 housing.eficiencia = housing.caracteristicas[2].replace(/.*title="(.)".*/,"$1");
             } else {
                  housing.eficiencia = 'no indicado';
@@ -80,7 +89,7 @@ function parseHousing(id, housing) {
                     housing.estado = item;
                 }
             }
-            fs.writeFile('housings/'+id+".json",JSON.stringify(housing));
+            fs.writeFile('housings_alquiler/'+id+".json",JSON.stringify(housing));
             filesToSave-=1;
         }
     });
